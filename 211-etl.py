@@ -9,6 +9,7 @@ import pipeline as pl
 from subprocess import call
 import pprint
 import time
+from collections import OrderedDict
 
 from parameters.local_parameters import SETTINGS_FILE, DATA_PATH
 from util.notify import send_to_slack
@@ -73,26 +74,41 @@ def get_headers(filename):
     return(fieldnames)
 
 
-
-
 class Base211Schema(pl.BaseSchema): 
-    created = fields.Date(dump_to="created_date", allow_none=True)
+    created = fields.Date(allow_none=True)
     agency_name = fields.String(allow_none=False)
-
-class ContactSchema(Base211Schema):
     contact_record_id = fields.String(allow_none=False)
     client_id = fields.String(allow_none=False)
     age = fields.String(allow_none=True)
     children_in_home = fields.Boolean(allow_none=True)
-    contact_medium = fields.String(allow_none=False)
+    contact_medium = fields.String(allow_none=True)
     county = fields.String(allow_none=False)
     region = fields.String(allow_none=False)
     state = fields.String(allow_none=False)
-    zip_code = fields.String(dump_to="zip_code", allow_none=False)
+    zip_code = fields.String(allow_none=False)
     gender = fields.String(allow_none=True)
     military_household = fields.String(allow_none=True)
     health_insurance_for_household = fields.String(allow_none=True)
     main_reason_for_call = fields.String(allow_none=True)
+
+    class Meta:
+        ordered = True
+
+class NeedsSchema(Base211Schema):
+    needs_category = fields.String(allow_none=True)
+    code_level_1 = fields.String(allow_none=True)
+    code_level_1_name = fields.String(allow_none=True)
+    needs_code = fields.String(allow_none=True)
+    code_level_2 = fields.String(allow_none=True)
+    code_level_2_name = fields.String(allow_none=True)
+    were_needs_unmet = fields.String(allow_none=True)
+    why_needs_unmet = fields.String(allow_none=True)
+
+class ClientSchema(Base211Schema):
+    class Meta:
+        ordered = True
+
+class ContactSchema(Base211Schema):
 
     #amount = fields.Float(dump_to="amount", allow_none=True)
     # Never let any of the key fields have None values. It's just asking for 
@@ -103,9 +119,6 @@ class ContactSchema(Base211Schema):
     # where the missing value starts as as a zero-length string, which this script
     # is then responsible for converting into something more appropriate.
 
-
-    class Meta:
-        ordered = True
 
     # From the Marshmallow documentation:
     #   Warning: The invocation order of decorated methods of the same 
@@ -279,6 +292,8 @@ def process(raw_file_location,processed_file_location):
                         outfile.write(line)
 
 def main(**kwargs):
+    schema_by_code = OrderedDict( [('clients', ClientSchema), ('contacts', ContactSchema), ('needs', NeedsSchema)] )
+
     specify_resource_by_name = True
     if specify_resource_by_name:
         kwparams = {'resource_name': '211 Clients (beta)'}
@@ -329,13 +344,13 @@ def main(**kwargs):
         raw_file_locations = ["{}/raw-{}.csv".format(most_recent_path,fc) for fc in filecodes]
 
     for raw_file_location, processed_file_location,filecode in zip(raw_file_locations,processed_file_locations,filecodes):
-        process(raw_file_location,processed_file_location)
+        schema = schema_by_code[filecode]
+        process(raw_file_location,processed_file_location,filecode,schema)
 
         if push_to_CKAN:
             print("Preparing to pipe data from {} to resource {} package ID {} on {}".format(processed_file_location,list(kwparams.values())[0],package_id,site))
             time.sleep(1.0)
 
-            schema = ClientsSchema
             fields0 = schema().serialize_to_ckan_fields()
             # Eliminate fields that we don't want to upload.
             #fields0.pop(fields0.index({'type': 'text', 'id': 'party_type'}))
