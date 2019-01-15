@@ -205,13 +205,43 @@ class ContactSchema(Base211Schema):
 def translate_headers(headers, alias_lookup):
     return [alias_lookup[header] for header in headers]
 
-def process(raw_file_location,processed_file_location):
+def process(raw_file_location,processed_file_location,filecode,schema):
     """Rename fields, bin ages, and hash IDs here."""
     headers = get_headers(raw_file_location)
     print("headers of {} = {}".format(raw_file_location,headers))
 
     # Option 1: Parse the whole CSV file, modify the field names, reconstruct it, and output it as a new file.
     just_change_headers = False
+    alias_lookup = {'contact: system create date': 'created',
+            'Contact: Agency Name': 'agency_name',
+            'Contact Record ID': 'contact_record_id',
+            'Client ID': 'client_id',
+            'Age': 'age',
+            'Are there children in the home?': 'children_in_home',
+            'Type of Contact': 'contact_medium',
+            'County': 'county',
+            'Region': 'region',
+            'State': 'state',
+            'Zip': 'zip_code',
+            'Gender': 'gender',
+            'Have you or anyone in the household served in the military?': 'military_household',
+            'SW - HealthCare - Does everyone in your household have health insurance?': 'health_insurance_for_household',
+            'Does everyone in your household have health insurance?': 'health_insurance_for_household',
+            'Primary reason for calling': 'main_reason_for_call',
+            'Presenting Needs: Taxonomy Category': 'needs_category',
+            'Taxonomy L1': 'code_level_1',
+            'Taxonomy L1 Name': 'code_level_1_name',
+            'Presenting Needs: Taxonomy Code': 'needs_code',
+            'Taxonomy L2': 'code_level_2',
+            'Taxonomy L2 Name': 'code_level_2_name',
+            'Presenting Needs: Unmet?': 'were_needs_unmet',
+            'Presenting Needs: Reason Unmet': 'why_needs_unmet'}
+
+    fields_with_types = schema().serialize_to_ckan_fields()
+    #fields0.pop(fields0.index({'type': 'text', 'id': 'party_type'}))
+
+    fields = [f['id'] for f in fields_with_types]
+    new_headers = fields
 
     if not just_change_headers:
         with open(raw_file_location, 'r') as f:
@@ -222,66 +252,15 @@ def process(raw_file_location,processed_file_location):
                 # row is a dict with keys equal to the CSV-file column names
                 # and values equal to the corresponding values of those parameters.
                 # FIX FIELD TYPES HERE.
-                rename_field(d,'Contact: System Create Date','created')
-                rename_field(d,'Contact: Agency Name','agency_name')
-                rename_field(d,'Contact Record ID','contact_record_id')
-                rename_field(d,'Client ID','client_id')
-                rename_field(d,'Age','age')
-                rename_field(d,'Are there children in the home?', 'children_in_home')
-                rename_field(d,'Type of Contact','contact_medium')
-                rename_field(d,'County','county')
-                rename_field(d,'Region','region')
-                rename_field(d,'State','state')
-                rename_field(d,'Zip','zip')
-                rename_field(d,'Gender','gender')
-                rename_field(d,'Have you or anyone in the household served in the military?','military_household')
-                rename_field(d,'SW - HealthCare - Does everyone in your household have health insurance?','health_insurance_for_household')
-                rename_field(d,'Does everyone in your household have health insurance?','health_insurance_for_household')
-                rename_field(d,'Primary reason for calling','main_reason_for_call')
-
-                del(d[rename_field(d,'Call Type Detail','call_type_detail')])
-
-                rename_field(d,'Presenting Needs: Taxonomy Category','needs_category')
-                rename_field(d,'Taxonomy L1','code_level_1')
-                rename_field(d,'Taxonomy L1 Name','code_level_1_name')
-                rename_field(d,'Presenting Needs: Taxonomy Code','needs_code')
-                rename_field(d,'Taxonomy L2','code_level_2')
-                rename_field(d,'Taxonomy L2 Name','code_level_2_name')
-                rename_field(d,'Presenting Needs: Unmet?','were_needs_unmet')
-                rename_field(d,'Presenting Needs: Reason Unmet','why_needs_unmet')
-
+                for old_field, new_field in alias_lookup.items():
+                    rename_field(d, old_field, new_field)
+                del(d['Call Type Detail'])
                 #d['age'] = int_or_none(d['age'])
                 ds.append(d)
 
-            write_to_csv(processed_file_location,ds,headers)
+            write_to_csv(processed_file_location,ds,new_headers)
 
     else: # option 2: just read the first line of the file, translate the headers, write the headers to a new file and pipe through the rest of the file contents.
-        alias_lookup = {'contact: system create date': 'created',
-                'Contact: Agency Name': 'contact_agency_name',
-                'Contact Record ID': 'contact_record_id',
-                'Client ID': 'client_id',
-                'Age': 'age',
-                'Are there children in the home?': 'children_in_home',
-                'Type of Contact': 'contact_medium',
-                'County': 'county',
-                'Region': 'region',
-                'State': 'state',
-                'Zip': 'zip',
-                'Gender': 'gender',
-                'Have you or anyone in the household served in the military?': 'military_household',
-                'SW - HealthCare - Does everyone in your household have health insurance?': 'health_insurance_for_household',
-                'Does everyone in your household have health insurance?': 'health_insurance_for_household',
-                'Primary reason for calling': 'main_reason_for_call',
-                'Presenting Needs: Taxonomy Category': 'needs_category',
-                'Taxonomy L1': 'code_level_1',
-                'Taxonomy L1 Name': 'code_level_1_name',
-                'Presenting Needs: Taxonomy Code': 'needs_code',
-                'Taxonomy L2': 'code_level_2',
-                'Taxonomy L2 Name': 'code_level_2_name',
-                'Presenting Needs: Unmet?': 'were_needs_unmet',
-                'Presenting Needs: Reason Unmet': 'why_needs_unmet',
-                'Call Type Detail': 'call_type_detail'}
-
         new_headers = translate_headers(headers, alias_lookup)
         with open(processed_file_location, 'w') as outfile:
             with open(raw_file_location, 'r') as infile:
