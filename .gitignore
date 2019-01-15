@@ -1,0 +1,14 @@
+*.pyc
+*.swp
+*.webloc
+__pycache__
+credentials.py
+TODO
+*-notes.txt
+documentation/
+most_recent/
+old/
+parameters/
+raw_data/
+2018-draft/
+*.csv
