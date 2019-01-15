@@ -179,28 +179,29 @@ class ContactSchema(Base211Schema):
         if data['zip_code'] == '12345':
             data['zip_code'] = None
 
-        age = data['age']
-        try:
-            age = int(age)
-            if age < 0:
-                data['age'] = None
-            elif age < 6:
-                data['age'] = '0 to 5'
-            elif age < 18:
-                data['age'] = '6 to 17'
-            elif age < 25:
-                data['age'] = '18 to 24'
-            elif age < 45:
-                data['age'] = '25 to 44'
-            elif age < 65:
-                data['age'] = '45 to 64'
-            elif age < 130:
-                data['age'] = '65 and over'
-            else: # Observed examples: 220, 889, 15025, 15401, 101214
-                data['age'] = None
-
-        except ValueError:
+def bin_age(data):
+    """Convert age string to a U.S. Census range of ages. Handle ridiculously large/negative ages and non-integer ages."""
+    age = data['age']
+    try:
+        age = int(age)
+        if age < 0:
             data['age'] = None
+        elif age < 6:
+            data['age'] = '0 to 5'
+        elif age < 18:
+            data['age'] = '6 to 17'
+        elif age < 25:
+            data['age'] = '18 to 24'
+        elif age < 45:
+            data['age'] = '25 to 44'
+        elif age < 65:
+            data['age'] = '45 to 64'
+        elif age < 130:
+            data['age'] = '65 and over'
+        else: # Observed examples: 220, 889, 15025, 15401, 101214
+            data['age'] = None
+    except ValueError:
+        data['age'] = None
 
 def translate_headers(headers, alias_lookup):
     return [alias_lookup[header] for header in headers]
@@ -255,7 +256,7 @@ def process(raw_file_location,processed_file_location,filecode,schema):
                 for old_field, new_field in alias_lookup.items():
                     rename_field(d, old_field, new_field)
                 del(d['Call Type Detail'])
-                #d['age'] = int_or_none(d['age'])
+                bin_age(d)
                 ds.append(d)
 
             write_to_csv(processed_file_location,ds,new_headers)
