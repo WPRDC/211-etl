@@ -176,8 +176,6 @@ class ContactSchema(Base211Schema):
             print("No filing date for {} and data['filing_date'] = {}".format(data['dtd'],data['filing_date']))
             data['filing_date'] = None
 
-        if data['zip_code'] == '12345':
-            data['zip_code'] = None
 
 def bin_age(data):
     """Convert age string to a U.S. Census range of ages. Handle ridiculously large/negative ages and non-integer ages."""
@@ -209,6 +207,12 @@ def standardize_date(data):
     else:
         print("Unable to turn data['created'] = {} into a valid date.".format(data['created']))
         data['created'] = None
+
+def remove_bogus_zip_codes(data):
+    """The United Way is coding unknown ZIP codes as 12345. These codes should be converted to blanks
+    before we get the data. This function is just a precautionary backstop."""
+    if data['zip_code'] == '12345':
+        data['zip_code'] = None
 
 def translate_headers(headers, alias_lookup):
     return [alias_lookup[header] for header in headers]
@@ -265,6 +269,7 @@ def process(raw_file_location,processed_file_location,filecode,schema):
                 del(d['Call Type Detail'])
                 bin_age(d)
                 standardize_date(d)
+                remove_bogus_zip_codes(d)
                 ds.append(d)
 
             write_to_csv(processed_file_location,ds,new_headers)
