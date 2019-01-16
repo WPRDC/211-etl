@@ -203,6 +203,13 @@ def bin_age(data):
     except ValueError:
         data['age'] = None
 
+def standardize_date(data):
+    if data['created']:
+        data['created'] = parser.parse(data['created']).date().isoformat()
+    else:
+        print("Unable to turn data['created'] = {} into a valid date.".format(data['created']))
+        data['created'] = None
+
 def translate_headers(headers, alias_lookup):
     return [alias_lookup[header] for header in headers]
 
@@ -213,7 +220,7 @@ def process(raw_file_location,processed_file_location,filecode,schema):
 
     # Option 1: Parse the whole CSV file, modify the field names, reconstruct it, and output it as a new file.
     just_change_headers = False
-    alias_lookup = {'contact: system create date': 'created',
+    alias_lookup = {'Contact: System Create Date': 'created',
             'Contact: Agency Name': 'agency_name',
             'Contact Record ID': 'contact_record_id',
             'Client ID': 'client_id',
@@ -257,6 +264,7 @@ def process(raw_file_location,processed_file_location,filecode,schema):
                     rename_field(d, old_field, new_field)
                 del(d['Call Type Detail'])
                 bin_age(d)
+                standardize_date(d)
                 ds.append(d)
 
             write_to_csv(processed_file_location,ds,new_headers)
