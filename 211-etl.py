@@ -15,6 +15,8 @@ from parameters.local_parameters import SETTINGS_FILE, DATA_PATH
 from util.notify import send_to_slack
 from util.ftp import fetch_files
 
+from nonchalance import encrypt_value
+
 def write_to_csv(filename,list_of_dicts,keys):
     with open(filename, 'w') as output_file:
         dict_writer = csv.DictWriter(output_file, keys, extrasaction='ignore', lineterminator='\n')
@@ -297,6 +299,8 @@ def process(raw_file_location,processed_file_location,filecode,schema):
                 standardize_county(d)
                 remove_bogus_zip_codes(d)
                 convert_na_values(d,filecode)
+                d['client_id'] = encrypt_value(d['client_id'])
+                d['contact_record_id'] = encrypt_value(d['contact_record_id'])
                 ds.append(d)
 
             write_to_csv(processed_file_location,ds,new_headers)
