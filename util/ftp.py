@@ -56,7 +56,7 @@ def fetch_files(settings_file,local_landing_path,local_storage_path,search_terms
                 # First save the file to a local latest_pull directory.
                 save_location = "{}/{}".format(local_landing_path,t)
                 sftp.get(t,save_location)
-                # Then check whether the filename already exists in the primary storagae directory.
+                # Then check whether the filename already exists in the primary storage directory.
                 destination_path = "{}/{}".format(local_storage_path,t)
                 if os.path.exists(destination_path):
                     # It's probably fine, unless the files don't match.

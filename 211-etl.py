@@ -7,7 +7,7 @@ from pprint import pprint
 sys.path.insert(0, '/Users/drw/WPRDC/etl-dev/wprdc-etl') # A path that we need to import code from
 import pipeline as pl
 from subprocess import call
-import pprint
+from pprint import pprint
 import time
 from collections import OrderedDict
 
@@ -154,17 +154,17 @@ class ContactSchema(Base211Schema):
     #    if data['block_lot'] is None:
     #        data['block_lot'] = ''
     #        print("Missing block-lot identifier")
-    #        pprint.pprint(data)
+    #        pprint(data)
     #    if data['pin'] is None:
     #        data['pin'] = ''
     #        print("Missing PIN")
-    #        pprint.pprint(data)
+    #        pprint(data)
     #    if data['case_id'] is None:
-    #        pprint.pprint(data)
+    #        pprint(data)
     #        raise ValueError("Found a null value for 'case_id'")
     #    if data['docket_type'] is None:
     #        data['docket_type'] = ''
-    #        pprint.pprint(data)
+    #        pprint(data)
     #        print("Found a null value for 'docket_type'")
 
 
