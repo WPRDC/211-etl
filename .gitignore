@@ -13,3 +13,5 @@ parameters/
 raw_data/
 2018-draft/
 *.csv
+nonchalance.py
+elsewhere.py
