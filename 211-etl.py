@@ -105,11 +105,10 @@ class NeedsSchema(Base211Schema):
     why_needs_unmet = fields.String(allow_none=True)
 
 class ClientSchema(Base211Schema):
-    class Meta:
-        ordered = True
+    pass
 
 class ContactSchema(Base211Schema):
-
+    pass
     #amount = fields.Float(dump_to="amount", allow_none=True)
     # Never let any of the key fields have None values. It's just asking for
     # multiplicity problems on upsert.
@@ -124,8 +123,8 @@ class ContactSchema(Base211Schema):
     #   Warning: The invocation order of decorated methods of the same
     #   type is not guaranteed. If you need to guarantee order of different
     #   processing steps, you should put them in the same processing method.
-    @pre_load
-    def plaintiffs_only_and_avoid_null_keys(self, data):
+    #@pre_load
+    #def plaintiffs_only_and_avoid_null_keys(self, data):
         #if data['party_type'] != 'Plaintiff':
         #    data['party_type'] = '' # If you make these values
         #    # None instead of empty strings, CKAN somehow
@@ -147,34 +146,34 @@ class ContactSchema(Base211Schema):
     # The stuff below was originally written as a separate function
     # called avoid_null_keys, but based on the above warning, it seems
     # better to merge it with omit_owners.
-        if data['plaintiff'] is None:
-            data['plaintiff'] = ''
-            print("Missing plaintiff")
-        if data['block_lot'] is None:
-            data['block_lot'] = ''
-            print("Missing block-lot identifier")
-            pprint.pprint(data)
-        if data['pin'] is None:
-            data['pin'] = ''
-            print("Missing PIN")
-            pprint.pprint(data)
-        if data['case_id'] is None:
-            pprint.pprint(data)
-            raise ValueError("Found a null value for 'case_id'")
-        if data['docket_type'] is None:
-            data['docket_type'] = ''
-            pprint.pprint(data)
-            print("Found a null value for 'docket_type'")
+    #    if data['plaintiff'] is None:
+    #        data['plaintiff'] = ''
+    #        print("Missing plaintiff")
+    #    if data['block_lot'] is None:
+    #        data['block_lot'] = ''
+    #        print("Missing block-lot identifier")
+    #        pprint.pprint(data)
+    #    if data['pin'] is None:
+    #        data['pin'] = ''
+    #        print("Missing PIN")
+    #        pprint.pprint(data)
+    #    if data['case_id'] is None:
+    #        pprint.pprint(data)
+    #        raise ValueError("Found a null value for 'case_id'")
+    #    if data['docket_type'] is None:
+    #        data['docket_type'] = ''
+    #        pprint.pprint(data)
+    #        print("Found a null value for 'docket_type'")
 
 
 
-    @pre_load
-    def fix_date_and_bin_age(self, data):
-        if data['filing_date']:
-            data['filing_date'] = parser.parse(data['filing_date']).date().isoformat()
-        else:
-            print("No filing date for {} and data['filing_date'] = {}".format(data['dtd'],data['filing_date']))
-            data['filing_date'] = None
+    #@pre_load
+    #def fix_date_and_bin_age(self, data):
+    #    if data['filing_date']:
+    #        data['filing_date'] = parser.parse(data['filing_date']).date().isoformat()
+    #    else:
+    #        print("No filing date for {} and data['filing_date'] = {}".format(data['dtd'],data['filing_date']))
+    #        data['filing_date'] = None
 
 
 def bin_age(data):
