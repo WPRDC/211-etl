@@ -200,6 +200,25 @@ def bin_age(data):
     except ValueError:
         data['age'] = None
 
+def standardize_county(data):
+    known_counties = []
+    data['county'] = data['county'].upper()
+    typo_fixes = {'15214': None,
+            #'ALLEGANY': 'ALLEGHENY', The Allegany record is actually from Allegany, New York.
+            'ALLEGHANY': 'ALLEGHENY',
+            'ALLEGHEBY': 'ALLEGHENY',
+            'ALLEGHEN': 'ALLEGHENY',
+            'ALLEGHEY': 'ALLEGHENY',
+            'ALLEGHNEY': 'ALLEGHENY',
+            'ALLEGHNY': 'ALLEGHENY',
+            'ALLEHGNY': 'ALLEGHENY',
+            'ARMSTORNG': 'ARMSTRONG'}
+
+    if data['region'] == 'Southwest - Pittsburgh': # Let's not make
+        # any presumptions about data from other regions.
+        if data['county'] in typo_fixes:
+            data['county'] = typo_fixes[data['county']]
+
 def standardize_date(data):
     if data['created']:
         data['created'] = parser.parse(data['created']).date().isoformat()
@@ -268,6 +287,7 @@ def process(raw_file_location,processed_file_location,filecode,schema):
                 del(d['Call Type Detail'])
                 bin_age(d)
                 standardize_date(d)
+                standardize_county(d)
                 remove_bogus_zip_codes(d)
                 ds.append(d)
 
