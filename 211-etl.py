@@ -232,6 +232,13 @@ def remove_bogus_zip_codes(data):
     if data['zip_code'] == '12345':
         data['zip_code'] = None
 
+def convert_na_values(data,filecode):
+    if filecode == 'needs':
+        if data['code_level_1_name'] == '#N/A':
+            data['code_level_1_name'] = None
+        if data['code_level_2_name'] == '#N/A':
+            data['code_level_2_name'] = None
+
 def translate_headers(headers, alias_lookup):
     return [alias_lookup[header] for header in headers]
 
@@ -289,6 +296,7 @@ def process(raw_file_location,processed_file_location,filecode,schema):
                 standardize_date(d)
                 standardize_county(d)
                 remove_bogus_zip_codes(d)
+                convert_na_values(d,filecode)
                 ds.append(d)
 
             write_to_csv(processed_file_location,ds,new_headers)
