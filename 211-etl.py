@@ -33,7 +33,7 @@ def rename_field(dict_i, old_field_name, new_field_name):
         return None
 
 def int_or_none(item):
-    try: 
+    try:
         val = int(item)
     except:
         return None
@@ -74,7 +74,7 @@ def get_headers(filename):
     return(fieldnames)
 
 
-class Base211Schema(pl.BaseSchema): 
+class Base211Schema(pl.BaseSchema):
     created = fields.Date(allow_none=True)
     agency_name = fields.String(allow_none=False)
     contact_record_id = fields.String(allow_none=False)
@@ -111,18 +111,18 @@ class ClientSchema(Base211Schema):
 class ContactSchema(Base211Schema):
 
     #amount = fields.Float(dump_to="amount", allow_none=True)
-    # Never let any of the key fields have None values. It's just asking for 
+    # Never let any of the key fields have None values. It's just asking for
     # multiplicity problems on upsert.
 
-    # [Note that since this script is taking data from CSV files, there should be no 
+    # [Note that since this script is taking data from CSV files, there should be no
     # columns with None values. It should all be instances like [value], [value],, [value],...
     # where the missing value starts as as a zero-length string, which this script
     # is then responsible for converting into something more appropriate.
 
 
     # From the Marshmallow documentation:
-    #   Warning: The invocation order of decorated methods of the same 
-    #   type is not guaranteed. If you need to guarantee order of different 
+    #   Warning: The invocation order of decorated methods of the same
+    #   type is not guaranteed. If you need to guarantee order of different
     #   processing steps, you should put them in the same processing method.
     @pre_load
     def plaintiffs_only_and_avoid_null_keys(self, data):
@@ -144,10 +144,10 @@ class ContactSchema(Base211Schema):
         #    data['plaintiff'] = str(data['party_name'])
         #del data['party_type']
         #del data['party_name']
-    # The stuff below was originally written as a separate function 
-    # called avoid_null_keys, but based on the above warning, it seems 
+    # The stuff below was originally written as a separate function
+    # called avoid_null_keys, but based on the above warning, it seems
     # better to merge it with omit_owners.
-        if data['plaintiff'] is None: 
+        if data['plaintiff'] is None:
             data['plaintiff'] = ''
             print("Missing plaintiff")
         if data['block_lot'] is None:
@@ -297,12 +297,12 @@ def main(**kwargs):
     push_to_CKAN = kwargs.get('push_to_CKAN',False)
     # Code below stolen from prime_ckan/*/open_a_channel() but really from utility_belt/gadgets
     #with open(os.path.dirname(os.path.abspath(__file__))+'/ckan_settings.json') as f: # The path of this file needs to be specified.
-    with open(SETTINGS_FILE) as f: 
+    with open(SETTINGS_FILE) as f:
         settings = json.load(f)
     site = settings['loader'][server]['ckan_root_url']
     package_id = settings['loader'][server]['package_id']
 
-    # Get CSV files that contain the data. These will come from 
+    # Get CSV files that contain the data. These will come from
     # either a remote server or a local cache.
     fetch_data = False
     if fetch_data:
@@ -399,7 +399,7 @@ if __name__ == "__main__":
 
         copy_of_args = list(args)
 
-        list_of_servers = ["211-testbed", 
+        list_of_servers = ["211-testbed",
                 ] # This list could be automatically harvested from SETTINGS_FILE.
 
         kwparams = {}
