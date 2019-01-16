@@ -253,8 +253,8 @@ def process(raw_file_location,processed_file_location,filecode,schema):
     just_change_headers = False
     alias_lookup = {'Contact: System Create Date': 'created',
             'Contact: Agency Name': 'agency_name',
-            'Contact Record ID': 'contact_record_id',
-            'Client ID': 'client_id',
+            'Contact Record ID': 'unencrypted_contact_record_id',
+            'Client ID': 'unencrypted_client_id',
             'Age': 'age',
             'Are there children in the home?': 'children_in_home',
             'Type of Contact': 'contact_medium',
@@ -283,6 +283,8 @@ def process(raw_file_location,processed_file_location,filecode,schema):
     new_headers = fields
 
     if not just_change_headers:
+        alias_lookup['Contact Record ID'] = 'unencrypted_contact_record_id'
+        alias_lookup['Client ID'] = 'unencrypted_client_id'
         with open(raw_file_location, 'r') as f:
             dr = csv.DictReader(f)
             rows = []
@@ -299,8 +301,10 @@ def process(raw_file_location,processed_file_location,filecode,schema):
                 standardize_county(d)
                 remove_bogus_zip_codes(d)
                 convert_na_values(d,filecode)
-                d['client_id'] = encrypt_value(d['client_id'])
-                d['contact_record_id'] = encrypt_value(d['contact_record_id'])
+                d['client_id'] = encrypt_value(d['unencrypted_client_id'])
+                del(d['unencrypted_client_id'])
+                d['contact_record_id'] = encrypt_value(d['unencrypted_contact_record_id'])
+                del(d['unencrypted_contact_record_id'])
                 ds.append(d)
 
             write_to_csv(processed_file_location,ds,new_headers)
